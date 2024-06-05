@@ -83,7 +83,7 @@ resource "azurerm_windows_web_app" "app-code9-api-01" {
       http_logs {
         file_system {
           retention_in_days = 4
-          retention_in_mb = 10
+          retention_in_mb = 25
         }
       }
   }
@@ -124,6 +124,7 @@ resource "azurerm_mssql_server" "sql-code9-server-01" {
   public_network_access_enabled     = false 
 
   azuread_administrator {
+    azuread_authentication_only = true
     login_username = "IT Cloud Administrators"
     object_id      = "8f6a3b2e-f93b-4feb-a6a2-ad114f31bca7"
  }

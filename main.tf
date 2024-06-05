@@ -53,7 +53,7 @@ resource "azurerm_service_plan" "plan-code9-api-01" {
   location             = var.location
   resource_group_name  = azurerm_resource_group.rg-aks.name
   os_type              = "Windows"
-  sku_name             = "B1"
+  sku_name             = "S1"
 }
 
 resource "azurerm_windows_web_app" "app-code9-api-01" {
@@ -62,16 +62,36 @@ resource "azurerm_windows_web_app" "app-code9-api-01" {
   location               = var.location
   service_plan_id        = azurerm_service_plan.plan-code9-api-01.name
   https_only             = true 
+  public_network_access_enabled = false
 
   site_config {
     ftps_state           = "FtpsOnly"
     load_balancing_mode  = "LeastRequests"
     use_32_bit_worker    = false
+    health_check_path    = "/healtz"
+    http2_enabled        = true
 
     application_stack {
       current_stack      = "dotnet"
       dotnet_version     = "v8.0"
     }
+  }
+
+  logs {
+      failed_request_tracing = true
+      detailed_error_messages_enabled = true
+      http_logs {
+         retention_in_days = 4
+         retention_in_mb = 10
+      }
+  }
+
+  identity {
+      type = "SystemAssigned"
+  }
+
+  auth_settings {
+      enabled = true
   }
 
   app_settings = {
@@ -97,11 +117,21 @@ resource "azurerm_mssql_server" "sql-code9-server-01" {
   name                              = "sqlcode9st08neu01"
   resource_group_name               = azurerm_resource_group.rg-aks.name
   location                          = "northeurope"
-  administrator_login               = "sqladmin"
-  administrator_login_password 	  	= "4v3ry53!cr37p455w0rd"
   version                           = "12.0"
   minimum_tls_version               = "1.2"
-  public_network_access_enabled     = true  
+  public_network_access_enabled     = false 
+
+  azuread_administrator {
+    login_username = "IT Cloud Administrators"
+    object_id      = "8f6a3b2e-f93b-4feb-a6a2-ad114f31bca7"
+ }
+
+  extended_auditing_policy {
+    storage_endpoint           = azurerm_storage_account.st-code9-01.primary_blob_endpoint
+    storage_account_access_key = azurerm_storage_account.st-code9-01.primary_access_key
+    storage_account_access_key_is_secondary = true
+    retention_in_days                       = 90
+  }
 }
 
 
@@ -111,7 +141,8 @@ resource "azurerm_mssql_database" "sqldb-code9-01" {
   collation                         = "SQL_Latin1_General_CP1_CI_AS"
   max_size_gb                       = 2
   sku_name                          = "Basic"
-  zone_redundant                    = false
+  zone_redundant                    = true
+  ledger_enabled                    = true
 
   # prevent the possibility of accidental data loss
   lifecycle {
@@ -127,13 +158,46 @@ resource "azurerm_storage_account" "st-code9-01" {
   resource_group_name          		  = azurerm_resource_group.rg-aks.name
   location                  	  	  = var.location
   account_tier               	  	  = "Standard"
-  account_replication_type 	    	  = "LRS"
+  account_replication_type 	    	  = "GRS"
   access_tier               	  	  = "Hot"
-  public_network_access_enabled     = true
+  public_network_access_enabled     = false
+  allow_nested_items_to_be_public   = false
+  min_tls_version                   = "TLS1_2"
+  shared_access_key_enabled         = false
+
+  blob_properties {
+    delete_retention_policy {
+      days = 7
+    }
+  }
+
+  sas_policy {
+    expiration_period = "90.00:00:00"
+    expiration_action = "Log"
+  }
+
+  queue_properties  {
+    logging {
+          delete                = true
+          read                  = true
+          write                 = true
+          version               = "1.0"
+          retention_policy_days = 10
+    }
+  }
 }
 
 resource "azurerm_storage_container" "st-code9-container-01" {
   name                              = "code9files"
   storage_account_name              = azurerm_storage_account.st-code9-01.name
   container_access_type             = "private"
+}
+
+resource "azurerm_log_analytics_storage_insights" "st-code9-storage-insights-01" {
+  name                = "stinsights-code9-storageinsightconfig"
+  resource_group_name = azurerm_resource_group.rg-aks.name
+  workspace_id        = azurerm_log_analytics_workspace.log-code9-01.id
+
+  storage_account_id  = azurerm_storage_account.st-code9-01.id
+  storage_account_key = azurerm_storage_account.st-code9-01.primary_access_key
 }

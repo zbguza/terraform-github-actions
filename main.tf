@@ -60,7 +60,7 @@ resource "azurerm_windows_web_app" "app-code9-api-01" {
   name                   = "app-code9-api-st08-weu-01"
   resource_group_name    = azurerm_resource_group.rg-aks.name
   location               = var.location
-  service_plan_id        = azurerm_service_plan.plan-code9-api-01.name
+  service_plan_id        = azurerm_service_plan.plan-code9-api-01.id
   https_only             = true 
 
   site_config {

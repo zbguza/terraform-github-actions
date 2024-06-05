@@ -79,10 +79,12 @@ resource "azurerm_windows_web_app" "app-code9-api-01" {
 
   logs {
       failed_request_tracing = true
-      detailed_error_messages_enabled = true
+      detailed_error_messages = true
       http_logs {
-         retention_in_days = 4
-         retention_in_mb = 10
+        file_system {
+          retention_in_days = 4
+          retention_in_mb = 10
+        }
       }
   }
 
@@ -125,13 +127,6 @@ resource "azurerm_mssql_server" "sql-code9-server-01" {
     login_username = "IT Cloud Administrators"
     object_id      = "8f6a3b2e-f93b-4feb-a6a2-ad114f31bca7"
  }
-
-  extended_auditing_policy {
-    storage_endpoint           = azurerm_storage_account.st-code9-01.primary_blob_endpoint
-    storage_account_access_key = azurerm_storage_account.st-code9-01.primary_access_key
-    storage_account_access_key_is_secondary = true
-    retention_in_days                       = 90
-  }
 }
 
 
@@ -148,6 +143,14 @@ resource "azurerm_mssql_database" "sqldb-code9-01" {
   lifecycle {
     prevent_destroy = true
   }
+}
+
+resource "azurerm_mssql_database_extended_auditing_policy" "sqlaud-code9-audit-neu-01" {
+  database_id                             = azurerm_mssql_database.sqldb-code9-01.id
+  storage_endpoint                        = azurerm_storage_account.st-code9-01.primary_blob_endpoint
+  storage_account_access_key              = azurerm_storage_account.st-code9-01.primary_access_key
+  storage_account_access_key_is_secondary = false
+  retention_in_days                       = 6
 }
 
 

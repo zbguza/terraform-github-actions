@@ -11,7 +11,7 @@ terraform {
     resource_group_name  = "rg-terraform-github-actions-state"
     storage_account_name = "tfstategithubzbguza"
     container_name       = "tfstate"
-    # key                  = "terraform.tfstate"
+    key                  = "terraform.tfstate"
     use_oidc             = true
     use_azuread_auth     = true
   }

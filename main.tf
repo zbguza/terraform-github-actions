@@ -53,7 +53,7 @@ resource "azurerm_service_plan" "plan-code9-01" {
   location             = var.location
   resource_group_name  = azurerm_resource_group.rg-aks.name
   os_type              = "Windows"
-  sku_name             = "S1"
+  sku_name             = "P0v3"
   worker_count         = 2
   zone_balancing_enabled = true
 }
@@ -138,7 +138,7 @@ resource "azurerm_mssql_database" "sqldb-code9-01" {
   server_id                         = azurerm_mssql_server.sql-code9-server-01.id
   collation                         = "SQL_Latin1_General_CP1_CI_AS"
   max_size_gb                       = 2
-  sku_name                          = "Basic"
+  sku_name                          = "S0"
   zone_redundant                    = true
   ledger_enabled                    = true
 
@@ -160,7 +160,7 @@ resource "azurerm_mssql_server_extended_auditing_policy" "sqlaud-code9-audit-neu
 ### Storage account
 
 resource "azurerm_storage_account" "st-code9-01" {
-  name                        		  = "stcode9st08neu01"
+  name                        		  = "stgithubst08neu01"
   resource_group_name          		  = azurerm_resource_group.rg-aks.name
   location                  	  	  = var.location
   account_tier               	  	  = "Standard"

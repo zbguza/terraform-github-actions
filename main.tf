@@ -147,7 +147,7 @@ resource "azurerm_mssql_database" "sqldb-code9-01" {
 }
 
 resource "azurerm_mssql_server_extended_auditing_policy" "sqlaud-code9-audit-neu-01" {
-  server_id                               = azurerm_mssql_database.sqldb-code9-01.id
+  server_id                               = azurerm_mssql_server.sql-code9-server-01.id
   storage_endpoint                        = azurerm_storage_account.st-code9-01.primary_blob_endpoint
   storage_account_access_key              = azurerm_storage_account.st-code9-01.primary_access_key
   storage_account_access_key_is_secondary = false

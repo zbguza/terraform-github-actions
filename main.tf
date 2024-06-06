@@ -13,7 +13,6 @@ terraform {
     container_name       = "tfstate"
     key                  = "terraform.tfstate"
     use_oidc             = true
-    use_azuread_auth     = true
   }
 }
 
@@ -170,7 +169,7 @@ resource "azurerm_storage_account" "st-code9-01" {
   public_network_access_enabled     = false
   allow_nested_items_to_be_public   = false
   min_tls_version                   = "TLS1_2"
-  shared_access_key_enabled         = false
+  # shared_access_key_enabled         = false
 
   blob_properties {
     delete_retention_policy {

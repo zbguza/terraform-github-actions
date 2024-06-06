@@ -54,6 +54,8 @@ resource "azurerm_service_plan" "plan-code9-api-01" {
   resource_group_name  = azurerm_resource_group.rg-aks.name
   os_type              = "Windows"
   sku_name             = "S1"
+  worker_count         = 2
+  zone_balancing_enabled = true
 }
 
 resource "azurerm_windows_web_app" "app-code9-api-01" {
@@ -204,4 +206,5 @@ resource "azurerm_log_analytics_storage_insights" "st-code9-storage-insights-01"
 
   storage_account_id  = azurerm_storage_account.st-code9-01.id
   storage_account_key = azurerm_storage_account.st-code9-01.primary_access_key
+  blob_container_names= [azurerm_storage_container.st-code9-container-01.name]
 }

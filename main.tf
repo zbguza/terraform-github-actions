@@ -30,7 +30,7 @@ resource "azurerm_resource_group" "rg-aks" {
 ### Application Insights
 
 resource "azurerm_log_analytics_workspace" "log-code9-01" {
-  name                  = "workspace-code9-st08-weu-01"
+  name                  = "workspace-code9-st08-neu-01"
   location              = var.location
   resource_group_name   = azurerm_resource_group.rg-aks.name
   sku                   = "PerGB2018"
@@ -38,7 +38,7 @@ resource "azurerm_log_analytics_workspace" "log-code9-01" {
 }
 
 resource "azurerm_application_insights" "appi-code9-01" {
-  name                  = "appi-code9-st08-weu-01"
+  name                  = "appi-code9-st08-neu-01"
   location              = var.location
   resource_group_name   = azurerm_resource_group.rg-aks.name
   workspace_id          = azurerm_log_analytics_workspace.log-code9-01.id
@@ -48,8 +48,8 @@ resource "azurerm_application_insights" "appi-code9-01" {
 
 ### App services
 
-resource "azurerm_service_plan" "plan-code9-api-01" {
-  name                 = "asp-code9-api-st08-weu-01"
+resource "azurerm_service_plan" "plan-code9-01" {
+  name                 = "asp-code9-st08-neu-01"
   location             = var.location
   resource_group_name  = azurerm_resource_group.rg-aks.name
   os_type              = "Windows"
@@ -59,10 +59,10 @@ resource "azurerm_service_plan" "plan-code9-api-01" {
 }
 
 resource "azurerm_windows_web_app" "app-code9-api-01" {
-  name                   = "app-code9-api-st08-weu-01"
+  name                   = "app-code9-api-st08-neu-01"
   resource_group_name    = azurerm_resource_group.rg-aks.name
   location               = var.location
-  service_plan_id        = azurerm_service_plan.plan-code9-api-01.name
+  service_plan_id        = azurerm_service_plan.plan-code9-01.id
   https_only             = true 
   public_network_access_enabled = false
 
@@ -134,7 +134,7 @@ resource "azurerm_mssql_server" "sql-code9-server-01" {
 
 
 resource "azurerm_mssql_database" "sqldb-code9-01" {
-  name                              = "sqldb-code9-st08-weu-01"
+  name                              = "sqldb-code9-st08-neu-01"
   server_id                         = azurerm_mssql_server.sql-code9-server-01.id
   collation                         = "SQL_Latin1_General_CP1_CI_AS"
   max_size_gb                       = 2

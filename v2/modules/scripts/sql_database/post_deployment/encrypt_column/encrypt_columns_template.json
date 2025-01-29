@@ -1,0 +1,24 @@
+{
+    "testA": {
+        "serverName": "testA",
+        "databaseName": "testA",
+        "schemaName": "testA",
+        "tableName": "testA",
+        "columnName": "testA",
+        "encryptionKeyVaultName": "testA",
+        "databaseMasterKeyName": "testA",
+        "columnMasterKeyName": "testA",
+        "columnKeyName": "testA"
+    },
+    "testB": {
+        "serverName": "testB",
+        "databaseName": "testB",
+        "schemaName": "testB",
+        "tableName": "testB",
+        "columnName": "testB",
+        "encryptionKeyVaultName": "testB",
+        "databaseMasterKeyName": "testB",
+        "columnMasterKeyName": "testB",
+        "columnKeyName": "testB"
+    }
+}

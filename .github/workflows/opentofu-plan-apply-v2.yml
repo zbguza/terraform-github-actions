@@ -57,7 +57,7 @@ jobs:
   plan:
     name: 'OpenTofu Plan'
     runs-on: ubuntu-latest
-    environment: '${{ github.event.inputs.stage }}'
+    environment: 'production'
     env:
       #this is needed since we are running terraform with read-only permissions
       ARM_SKIP_PROVIDER_REGISTRATION: true
@@ -170,7 +170,7 @@ jobs:
   #   if: ${{ inputs.tofu_action == 'apply' }}
   #   needs: [plan]
   #   runs-on: ubuntu-latest
-  #   environment: '${{ github.event.inputs.stage }}'
+  #   environment: 'production'
     
   #   steps:
   #   # - name: Get IP Addresses

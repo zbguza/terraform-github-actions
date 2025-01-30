@@ -29,9 +29,9 @@ on:
           - "plan"
           - "apply"
 
-concurrency:
-  # Cancel in-progress deploys to the same branch
-  group: ${{ github.workflow }}-${{ github.ref }}
+# concurrency:
+#   # Cancel in-progress deploys to the same branch
+#   group: ${{ github.workflow }}-${{ github.ref }}
 
 permissions:
   contents: read
@@ -44,7 +44,7 @@ defaults:
 
 env:
   TOFU_PATH: v2
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   # Included here to override behavior of the terraform azurerm backend behavior
   # Which by default we have configured to use user azuread
   ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}

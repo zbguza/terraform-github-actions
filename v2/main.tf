@@ -1,19 +1,12 @@
-# Main module for entire infrastructure (all platforms)
+resource "azurerm_resource_group" "rg-01" {
+  name     = "rg-open-tofu-01"
+  location = "West Europe"
+}
 
-# Deploy Azure resources, variable values are defined in tfvars files
-module "azure" {
-  source = "./modules/azure"
-
-  company_name            = var.company_name
-  location_name           = var.location_name
-  owner                   = var.owner
-  environment             = var.environment
-  subscription_id         = var.subscription_id
-  sql_server_admins       = var.sql_server_admins
-  spendproof_sql_database = var.spendproof_sql_database
-  disap_sql_database      = var.disap_sql_database
-  stmt_sql_database       = var.stmt_sql_database
-  vnet_weu                = var.vnet_weu
-  rg_dns_zones_name       = var.rg_dns_zones_name
-  node_pools              = var.node_pools
+resource "azurerm_storage_account" "st-01" {
+  name                     = var.st_acc_name
+  resource_group_name      = azurerm_resource_group.rg-01.name
+  location                 = azurerm_resource_group.rg-01.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
 }

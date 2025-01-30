@@ -94,49 +94,49 @@ jobs:
       id: plan
       run: tofu plan -var-file="${{ inputs.stage }}.tfvars" -detailed-exitcode -no-color -out tfplan
   
-    # Save plan to artifacts  
-    - name: Publish Terraform Plan
-      uses: actions/upload-artifact@v4
-      with:
-        name: tfplan
-        path: tfplan
+    # # Save plan to artifacts  
+    # - name: Publish Terraform Plan
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: tfplan
+    #     path: tfplan
 
-    - uses: actions/github-script@v6
-      if: github.event_name == 'pull_request'
-      env:
-        PLAN: "tofu\n${{ steps.plan.outputs.stdout }}"
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const output = `#### OpenTofu Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-          #### OpenTofu Initialization ⚙️\`${{ steps.init.outcome }}\`
-          #### OpenTofu Validation 🤖\`${{ steps.validate.outcome }}\`
-          <details><summary>Validation Output</summary>
+    # - uses: actions/github-script@v6
+    #   if: github.event_name == 'pull_request'
+    #   env:
+    #     PLAN: "tofu\n${{ steps.plan.outputs.stdout }}"
+    #   with:
+    #     github-token: ${{ secrets.GITHUB_TOKEN }}
+    #     script: |
+    #       const output = `#### OpenTofu Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+    #       #### OpenTofu Initialization ⚙️\`${{ steps.init.outcome }}\`
+    #       #### OpenTofu Validation 🤖\`${{ steps.validate.outcome }}\`
+    #       <details><summary>Validation Output</summary>
     
-          \`\`\`\n
-          ${{ steps.validate.outputs.stdout }}
-          \`\`\`
+    #       \`\`\`\n
+    #       ${{ steps.validate.outputs.stdout }}
+    #       \`\`\`
     
-          </details>
+    #       </details>
     
-          #### OpenTofu Plan 📖\`${{ steps.plan.outcome }}\`
+    #       #### OpenTofu Plan 📖\`${{ steps.plan.outcome }}\`
     
-          <details><summary>Show Plan</summary>
+    #       <details><summary>Show Plan</summary>
     
-          \`\`\`\n
-          ${process.env.PLAN}
-          \`\`\`
+    #       \`\`\`\n
+    #       ${process.env.PLAN}
+    #       \`\`\`
     
-          </details>
+    #       </details>
     
-          *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.TOFU_PATH }}\`, Workflow: \`${{ github.workflow }}\`*`;
+    #       *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.TOFU_PATH }}\`, Workflow: \`${{ github.workflow }}\`*`;
     
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: output
-          })
+    #       github.rest.issues.createComment({
+    #         issue_number: context.issue.number,
+    #         owner: context.repo.owner,
+    #         repo: context.repo.repo,
+    #         body: output
+    #       })
   
   
     # # Create string output of Terraform Plan

@@ -92,7 +92,7 @@ jobs:
     # An exit code of 0 indicated no changes, 1 a terraform failure, 2 there are pending changes.
     - name: OpenTofu Plan
       id: plan
-      run: tofu plan -var-file="${{ inputs.stage }}.tfvars" -detailed-exitcode -no-color -out tfplan
+      run: tofu plan -var-file="${{ inputs.stage }}.tfvars" -out tfplan
       continue-on-error: true
   
     # Save plan to artifacts  

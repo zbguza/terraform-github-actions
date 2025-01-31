@@ -134,15 +134,15 @@ jobs:
     
     steps:
     # Manual Approval for tofu Apply action
-    - name: Await Manual Approval
-      uses: trstringer/manual-approval@v1
-      with:
-        secret: ${{ github.TOKEN }}
-        approvers: 'zbguza (zbguza)' # Replace with GitHub usernames, with the free version you can only have an issue assigned to one username
-        minimum-approvals: 1
-        issue-title: "Manual Approval Required for Terraform Apply"
-        issue-body: "Please approve or deny the deployment."
-        exclude-workflow-initiator-as-approver: false
+    # - name: Await Manual Approval
+    #   uses: trstringer/manual-approval@v1
+    #   with:
+    #     secret: ${{ github.TOKEN }}
+    #     approvers: 'user1,user2,user3,group1,group2' # Replace with GitHub usernames, with the free version you can only have an issue assigned to one username
+    #     minimum-approvals: 1
+    #     issue-title: "Manual Approval Required for Terraform Apply"
+    #     issue-body: "Please approve or deny the deployment."
+    #     exclude-workflow-initiator-as-approver: false
 
     # Checkout the repository to the GitHub Actions runner
     - name: Checkout

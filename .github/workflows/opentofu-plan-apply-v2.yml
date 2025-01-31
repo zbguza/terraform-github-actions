@@ -89,28 +89,22 @@ jobs:
       run: tofu validate -no-color
 
     # Generates an execution plan for OpenTofu
-    # An exit code of 0 indicated no changes, 1 a terraform failure, 2 there are pending changes.
     - name: OpenTofu Plan
       id: plan
-      run: tofu plan -var-file="${{ inputs.stage }}.tfvars" -out tfplan
-      continue-on-error: true
+      run: tofu plan -var-file="${{ inputs.stage }}.tfvars" -out "${{ inputs.stage }}-tfplan"
 
-    - name: Display paths
-      id: show
-      run: ls -R
-  
     # Save plan to artifacts  
     - name: Publish Terraform Plan
       uses: actions/upload-artifact@v4
       with:
-        name: tfplan
-        path: v2/tfplan
+        name: '${{ inputs.stage }}-tfplan'
+        path: 'v2/${{ inputs.stage }}-tfplan'
   
     # Create string output of Terraform Plan
     - name: Create String Output
       id: tf-plan-string
       run: |
-        TERRAFORM_PLAN=$(tofu show -no-color tfplan)
+        TERRAFORM_PLAN=$(tofu show -no-color '${{ inputs.stage }}-tfplan')
         
         delimiter="$(openssl rand -hex 8)"
         echo "summary<<${delimiter}" >> $GITHUB_OUTPUT
@@ -129,119 +123,43 @@ jobs:
         SUMMARY: ${{ steps.tf-plan-string.outputs.summary }}
       run: |
         echo "$SUMMARY" >> $GITHUB_STEP_SUMMARY
-      
 
-                
-  # apply:
-  #   name: 'Terraform Apply'
-  #   if: ${{ inputs.tofu_action == 'apply' }}
-  #   needs: [plan]
-  #   runs-on: ubuntu-latest
-  #   environment: 'production'
+          
+  apply:
+    name: 'OpenTofu Apply'
+    if: ${{ inputs.tofu_action == 'apply' }}
+    needs: [plan]
+    runs-on: ubuntu-latest
+    environment: 'production'
     
-  #   steps:
-  #   # - name: Get IP Addresses
-  #   #   id: ip
-  #   #   uses: candidob/get-runner-ip@v1.0.0
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v4
 
-  #   # - name: See IP Addresses
-  #   #   run: |
-  #   #     echo ${{ steps.ip.outputs.ipv4 }}
+    - name: Setup OpenTofu
+      uses: opentofu/setup-opentofu@v1
+      with:
+        tofu_wrapper: false
 
-  #   # Checkout the repository to the GitHub Actions runner
-  #   - name: Checkout
-  #     uses: actions/checkout@v4
+    - name: OpenTofu Init
+      id: init
+      run: tofu init
 
-  #   # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
-  #   - name: Setup Terraform
-  #     uses: hashicorp/setup-terraform@v3
-  #     with:
-  #       terraform_wrapper: false
-  #       terraform_version: "1.8.5"
+    # Download saved plan from artifacts  
+    - name: Download Terraform Plan
+      uses: actions/download-artifact@v4
+      with:
+        name: '${{ inputs.stage }}-tfplan'
+        path: v2
 
-  #   # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
-  #   - name: Terraform Init
-  #     run: terraform -chdir=Integrations/${{ inputs.Integration }}/Infrastructure/Terraform init -backend-config="resource_group_name=${{ vars.TFSTATE_RG_NAME }}" -backend-config="storage_account_name=${{ vars.TFSTATE_STORAGE_ACCOUNT_NAME }}" -backend-config="container_name=${{ inputs.Integration }}" -backend-config="key=${{ inputs.stage }}.tfstate"
-
-  #   # Download saved plan from artifacts  
-  #   - name: Download Terraform Plan
-  #     uses: actions/download-artifact@v4
-  #     with:
-  #       name: tfplan
-  #       path: Integrations/${{ inputs.Integration }}/Infrastructure/Terraform
-
-
-  #   - name: "Login via Azure CLI"
-  #     uses: azure/login@v2
-  #     with:
-  #       client-id: ${{ secrets.AZURE_CLIENT_ID }}
-  #       tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-  #       subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    # - name: "Login via Azure CLI"
+    #   uses: azure/login@v2
+    #   with:
+    #     client-id: ${{ secrets.AZURE_CLIENT_ID }}
+    #     tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+    #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
   
-  #   # If storage account exists, temporary enable public access
-  #   # - name: Enable public access
-  #   #   uses: azure/cli@v2
-  #   #   with:
-  #   #     azcliversion: latest
-  #   #     inlineScript: |
-  #   #       lower="$(echo "${{ inputs.Integration }}" | tr '[:upper:]' '[:lower:]')"
-  #   #       IFS='-' read -r -a array <<< "$lower"
-  #   #       IFS=''
-  #   #       integrationname="$(echo "${array[*]}")"
-  #   #       saname=vwiwe${{ github.event.inputs.stage }}$integrationname
-  #   #       echo "variable sa name is: " $saname
-  #   #       if az storage account show --name "$saname" -o none; then
-  #   #         az storage account update --resource-group "vwi-we-${{ github.event.inputs.stage }}-rg-${{ inputs.Integration }}" --name $saname --default-action Allow
-  #   #       fi
-  #   #       sleep 10
-
-  #   # Terraform Apply
-  #   - name: Terraform Apply
-  #     run: terraform -chdir=Integrations/${{ inputs.Integration }}/Infrastructure/Terraform apply -auto-approve tfplan
-
-
-
-
-  # opentofu-apply:
-  #   runs-on: self-hosted
-
-  #   # Add a matrix strategy to ensure that the apply runs for all of our
-  #   # environments.
-  #   # strategy:
-  #   #   matrix:
-  #   #     workspace: [dev, qa, prd]
-
-  #   steps:
-  #     - uses: actions/checkout@v4
-
-  #     - name: "Login via Azure CLI"
-  #       uses: azure/login@v2
-  #       with:
-  #         client-id: ${{ secrets.AZURE_CLIENT_ID }}
-  #         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-  #         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-  #     - name: tofu apply
-  #       uses: dflook/tofu-apply@v1
-  #       continue-on-error: true
-  #       id: first_try
-  #       with:
-  #         workspace: ${{ matrix.workspace }}
-  #         #For auto_approve, by default we will not auto-approve and a valid PR
-  #         #plan is needed, but if the user has triggered this workflow
-  #         #mannually, there is the option to force auto-approve. This is mostly
-  #         #intended for situations where an error occurs during the apply (that
-  #         #wouldn't show up in the plan output) and external changes were made
-  #         #to remedy it, but then a re-deploy would also be needed.
-  #         auto_approve: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.auto_approve == 'true' }}
-  #         path: ${{ env.TOFU_PATH }}
-  #         var_file: ${{ env.TOFU_PATH }}/${{ matrix.workspace }}.tfvars #v2/<env>.tfvars
-
-  #     - name: Retry failed apply
-  #       uses: dflook/tofu-apply@v1
-  #       if: ${{ steps.first_try.outputs.failure-reason == 'apply-failed' }}
-  #       with:
-  #         workspace: ${{ matrix.workspace }}
-  #         auto_approve: true #retry should always use auto-approve
-  #         path: ${{ env.TOFU_PATH }}
-  #         var_file: ${{ env.TOFU_PATH }}/${{ matrix.workspace }}.tfvars #v2/<env>.tfvars
+    # Terraform Apply
+    - name: OpenTofu Apply
+      run: tofu apply -auto-approve '${{ inputs.stage }}-tfplan'

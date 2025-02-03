@@ -66,4 +66,4 @@ jobs:
     # Generates an execution plan for OpenTofu
     - name: OpenTofu Plan
       id: plan
-      run: tofu plan -var-file="dev.tfvars"
+      run: tofu plan -var-file="prd.tfvars"

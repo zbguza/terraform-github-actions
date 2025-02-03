@@ -3,9 +3,16 @@ run-name: 'OpenTofu PR check infrastructure against DEV environment'
 on:
   pull_request:
     branches:
-      - main
+      - develop
     paths:
       - v2/**
+
+
+concurrency:
+  # Cancel in-progress deploys to the same branch
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 
 permissions:
   contents: read
@@ -13,9 +20,11 @@ permissions:
   issues: write
   id-token: write # This is required for requesting the JWT exchange for Azure OIDC
 
+
 defaults:
   run:
     working-directory: v2
+
 
 env:
   TOFU_PATH: v2
@@ -30,6 +39,11 @@ jobs:
   plan:
     name: 'OpenTofu Plan'
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        workspace: [dev, qa, prd]
+    
     env:
       #this is needed since we are running with read-only permissions
       ARM_SKIP_PROVIDER_REGISTRATION: true
@@ -64,30 +78,6 @@ jobs:
       run: tofu validate -no-color
 
     # Generates an execution plan for OpenTofu
-    - name: OpenTofu Plan
+    - name: OpenTofu Plan for ${{ matrix.workspace }}
       id: plan
-      run: tofu plan -var-file="prd.tfvars" -out "dev-tfplan"
-
-      # Create string output of Terraform Plan
-    - name: Create String Output
-      id: tf-plan-string
-      run: |
-        TERRAFORM_PLAN=$(tofu show -no-color 'dev-tfplan')
-        
-        delimiter="$(openssl rand -hex 8)"
-        echo "summary<<${delimiter}" >> $GITHUB_OUTPUT
-        echo "## Terraform Plan Output" >> $GITHUB_OUTPUT
-        echo "<details><summary>Click to expand</summary>" >> $GITHUB_OUTPUT
-        echo "" >> $GITHUB_OUTPUT
-        echo '```terraform' >> $GITHUB_OUTPUT
-        echo "$TERRAFORM_PLAN" >> $GITHUB_OUTPUT
-        echo '```' >> $GITHUB_OUTPUT
-        echo "</details>" >> $GITHUB_OUTPUT
-        echo "${delimiter}" >> $GITHUB_OUTPUT
-        
-    # Publish Terraform Plan as task summary
-    - name: Publish Terraform Plan to Task Summary
-      env:
-        SUMMARY: ${{ steps.tf-plan-string.outputs.summary }}
-      run: |
-        echo "$SUMMARY" >> $GITHUB_STEP_SUMMARY
+      run: tofu plan -var-file=${{ matrix.workspace }}.tfvars

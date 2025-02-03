@@ -3,7 +3,7 @@ run-name: 'OpenTofu PR check infrastructure against DEV environment'
 on:
   pull_request:
     branches:
-      - develop
+      - main
     paths:
       - v2/**
 

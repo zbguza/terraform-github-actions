@@ -3,7 +3,7 @@ run-name: 'Deploy/Update infrastructure | ${{ inputs.stage }} | ${{ inputs.tofu_
 on:
   push: # For full deployments
     branches:
-      - develop
+      - main
     paths:
       - v2/**
   workflow_dispatch:

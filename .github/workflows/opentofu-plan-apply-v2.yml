@@ -36,6 +36,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  issues: write
   id-token: write # This is required for requesting the JWT exchange for Azure OIDC
 
 defaults:

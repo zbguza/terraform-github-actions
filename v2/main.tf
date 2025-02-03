@@ -10,3 +10,11 @@ resource "azurerm_storage_account" "st-01" {
   account_tier             = "Standard"
   account_replication_type = "LRS"
 }
+
+resource "azurerm_storage_account" "st-02" {
+  name                     = "${{var.st_acc_name}}-02"
+  resource_group_name      = azurerm_resource_group.rg-01.name
+  location                 = azurerm_resource_group.rg-01.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+}

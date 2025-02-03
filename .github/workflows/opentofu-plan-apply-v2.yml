@@ -1,7 +1,7 @@
 name: 'OpenTofu Infrastructure Plan/Apply'
 run-name: 'Deploy/Update infrastructure | ${{ inputs.stage }} | ${{ inputs.tofu_action }}'
 on:
-  push: # For full deployments
+  pull_request: # For full deployments
     branches:
       - main
     paths:

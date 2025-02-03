@@ -1,0 +1,69 @@
+name: 'OpenTofu PR check'
+run-name: 'OpenTofu PR check infrastructure against DEV environment'
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - v2/**
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write # This is required for requesting the JWT exchange for Azure OIDC
+
+defaults:
+  run:
+    working-directory: v2
+
+env:
+  TOFU_PATH: v2
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  ARM_USE_OIDC: true
+
+
+jobs:
+  plan:
+    name: 'OpenTofu Plan'
+    runs-on: ubuntu-latest
+    env:
+      #this is needed since we are running with read-only permissions
+      ARM_SKIP_PROVIDER_REGISTRATION: true
+    outputs:
+      tfplanExitCode: ${{ steps.plan.outputs.exitcode }}
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # Install the latest version of the OpenTofu CLI
+    - name: Setup OpenTofu
+      uses: opentofu/setup-opentofu@v1
+      with:
+        tofu_wrapper: false
+
+    # OpenTofu format
+    - name: OpenTofu fmt
+      id: fmt
+      run: tofu fmt -check
+      continue-on-error: true
+
+    # OpenTofu Init
+    - name: OpenTofu Init
+      id: init
+      run: tofu init
+
+    # OpenTofu Validate
+    - name: OpenTofu Validate
+      id: validate
+      run: tofu validate -no-color
+
+    # Generates an execution plan for OpenTofu
+    - name: OpenTofu Plan
+      id: plan
+      run: tofu plan -var-file="dev.tfvars"
